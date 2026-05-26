@@ -5,6 +5,8 @@
 
 A Bob skill that autonomously fixes GitHub Dependabot security alerts by updating dependencies, **automatically discovering migration guides, applying code fixes for breaking changes**, verifying builds/tests, and creating pull requests.
 
+**This is an initial version, please use with caution. The code was generated using AI tools.**
+
 ---
 
 ## 📋 Table of Contents
