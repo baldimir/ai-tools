@@ -449,24 +449,28 @@ Use the GitHub API via `gh` CLI to fetch all Dependabot alerts from the alert re
 
 ```bash
 # Use ALERT_REPOSITORY from remote selection
-gh api repos/${ALERT_REPOSITORY}/dependabot/alerts
+gh api repos/${ALERT_REPOSITORY}/dependabot/alerts --paginate
 ```
+
+**Note:** The `--paginate` flag is essential for repositories with many alerts. GitHub API returns 30 items per page by default, so without pagination you'll only see the first 30 alerts.
 
 ### Filtered Alert Fetch (Open Alerts Only)
 
 Fetch only open alerts using jq filtering:
 
 ```bash
-gh api repos/${ALERT_REPOSITORY}/dependabot/alerts \
-  --jq '.[] | select(.state == "open")'
+gh api repos/${ALERT_REPOSITORY}/dependabot/alerts --paginate \
+  --jq '.[] | select(.state == "open")' | jq -s .
 ```
+
+**Note:** When using `--paginate` with `--jq`, the jq filter is applied to each page separately. The final `| jq -s .` collects all results into a single array.
 
 ### Structured Alert Fetch
 
 Fetch alerts with specific fields extracted:
 
 ```bash
-gh api repos/${ALERT_REPOSITORY}/dependabot/alerts \
+gh api repos/${ALERT_REPOSITORY}/dependabot/alerts --paginate \
   --jq '.[] | select(.state == "open") | {
     number: .number,
     package: .dependency.package.name,
@@ -480,10 +484,88 @@ gh api repos/${ALERT_REPOSITORY}/dependabot/alerts \
     cvss_score: .security_advisory.cvss.score,
     vulnerable_range: .security_vulnerability.vulnerable_version_range,
     patched_version: .security_vulnerability.first_patched_version.identifier
-  }'
+## Pagination
+
+GitHub's REST API returns results in pages, with a default page size of 30 items. For repositories with many Dependabot alerts, you must use pagination to fetch all alerts.
+
+### Why Pagination Matters
+
+Without pagination:
+- Only the first 30 alerts are returned
+- Large repositories may have hundreds of alerts
+- You'll miss critical vulnerabilities that aren't on the first page
+
+### Using --paginate Flag
+
+The `gh` CLI provides a `--paginate` flag that automatically handles pagination:
+
+```bash
+# Without pagination (only first 30 alerts)
+gh api repos/owner/repo/dependabot/alerts
+
+# With pagination (all alerts)
+gh api repos/owner/repo/dependabot/alerts --paginate
 ```
 
-**Note:** Always use the `ALERT_REPOSITORY` variable from the alert remote selection step to ensure alerts are fetched from the correct repository (where Dependabot is enabled).
+### Pagination with jq Filtering
+
+When combining `--paginate` with `--jq`, the jq filter is applied to each page separately. To collect all results into a single array, pipe through `jq -s .`:
+
+```bash
+# Correct: Collects all paginated results into one array
+gh api repos/owner/repo/dependabot/alerts --paginate \
+  --jq '.[] | select(.state == "open")' | jq -s .
+
+# Incorrect: Results remain separated by page
+gh api repos/owner/repo/dependabot/alerts --paginate \
+  --jq '.[] | select(.state == "open")'
+```
+
+### How It Works
+
+1. `--paginate` fetches all pages automatically
+2. `--jq '.[] | select(.state == "open")'` filters each page
+3. `| jq -s .` collects all filtered results into a single JSON array
+
+### Example: Large Repository
+
+For a repository like `kiegroup/kogito-examples` with many alerts:
+
+```bash
+# This command fetches ALL alerts across all pages
+gh api repos/kiegroup/kogito-examples/dependabot/alerts --paginate \
+  --jq '.[] | select(.state == "open") | {
+    number: .number,
+    package: .dependency.package.name,
+    ecosystem: .dependency.package.ecosystem,
+    manifest_path: .dependency.manifest_path,
+    severity: .security_advisory.severity,
+    cve_id: .security_advisory.cve_id,
+    ghsa_id: .security_advisory.ghsa_id,
+    summary: .security_advisory.summary,
+    vulnerable_range: .security_vulnerability.vulnerable_version_range,
+    patched_version: .security_vulnerability.first_patched_version.identifier
+  }' | jq -s .
+```
+
+### Performance Considerations
+
+- Pagination adds minimal overhead for small repositories
+- For large repositories, it's essential to get complete data
+- The `gh` CLI handles rate limiting automatically
+- Results are streamed, so memory usage remains reasonable
+
+### Best Practice
+
+**Always use `--paginate`** when fetching Dependabot alerts to ensure you don't miss any vulnerabilities, regardless of repository size.
+
+  }' | jq -s .
+```
+
+**Important Notes:**
+- Always use the `ALERT_REPOSITORY` variable from the alert remote selection step to ensure alerts are fetched from the correct repository (where Dependabot is enabled)
+- Always include `--paginate` to fetch all alerts across multiple pages
+- When using `--paginate` with `--jq`, pipe the output through `| jq -s .` to collect all paginated results into a single JSON array
 
 ## Alert Data Structure
 
@@ -547,9 +629,11 @@ Each alert contains the following key information:
 ### Step 1: Fetch Raw Data
 
 ```bash
-# Store alerts in a variable or file
-gh api repos/{owner}/{repo}/dependabot/alerts > alerts.json
+# Store alerts in a variable or file (with pagination)
+gh api repos/{owner}/{repo}/dependabot/alerts --paginate | jq -s 'add' > alerts.json
 ```
+
+**Note:** The `| jq -s 'add'` combines all paginated arrays into a single array before saving to file.
 
 ### Step 2: Extract Essential Information
 
@@ -813,8 +897,8 @@ if ! gh auth status &>/dev/null; then
     exit 1
 fi
 
-# 4. Fetch alerts from alert remote
-ALERTS=$(gh api "repos/$ALERT_REPOSITORY/dependabot/alerts" --jq '.[] | select(.state == "open")')
+# 4. Fetch alerts from alert remote (with pagination)
+ALERTS=$(gh api "repos/$ALERT_REPOSITORY/dependabot/alerts" --paginate --jq '.[] | select(.state == "open")' | jq -s .)
 
 # 5. Check if any alerts found
 if [ -z "$ALERTS" ]; then
@@ -855,11 +939,11 @@ gh api user
 # 3. Test repository access
 gh api repos/{owner}/{repo}
 
-# 4. Test alert access
-gh api repos/{owner}/{repo}/dependabot/alerts
+# 4. Test alert access (with pagination)
+gh api repos/{owner}/{repo}/dependabot/alerts --paginate
 
-# 5. Test with filtering
-gh api repos/{owner}/{repo}/dependabot/alerts --jq '.[] | select(.state == "open") | .number'
+# 5. Test with filtering (with pagination)
+gh api repos/{owner}/{repo}/dependabot/alerts --paginate --jq '.[] | select(.state == "open") | .number' | jq -s .
 ```
 
 ### Expected Outputs

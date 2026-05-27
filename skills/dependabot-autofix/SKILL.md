@@ -222,7 +222,7 @@ fi
 # Use owner/repo from selected remote
 OWNER_REPO="${SELECTED_REMOTE_OWNER_REPO}"
 
-gh api repos/${OWNER_REPO}/dependabot/alerts \
+gh api repos/${OWNER_REPO}/dependabot/alerts --paginate \
   --jq '.[] | select(.state == "open") | {
     number: .number,
     package: .dependency.package.name,
@@ -234,8 +234,10 @@ gh api repos/${OWNER_REPO}/dependabot/alerts \
     summary: .security_advisory.summary,
     vulnerable_range: .security_vulnerability.vulnerable_version_range,
     patched_version: .security_vulnerability.first_patched_version.identifier
-  }'
+  }' | jq -s .
 ```
+
+**Note:** The `--paginate` flag ensures all alerts are fetched across multiple pages (GitHub API returns 30 items per page by default). The final `| jq -s .` collects all paginated results into a single JSON array.
 
 **Error Handling:**
 - If remote has no Dependabot alerts: Inform user, exit gracefully
