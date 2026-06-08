@@ -54,14 +54,22 @@ The skill uses an **ecosystem-agnostic approach** that automatically:
 
 ### Transitive Dependencies
 
-**Approach:** Update parent dependency or add as direct
+**Approach:** Prioritize updating direct dependencies first, then use overrides only if necessary
 
-**Steps:**
+**Priority Strategy:**
+
+When a vulnerable library is a transitive dependency (brought in by another dependency), follow this strict prioritization:
+
+**Option 1: Update Direct Dependency (ALWAYS TRY FIRST)**
 1. Identify which direct dependency includes the vulnerable transitive
-2. Check if updating direct dependency fixes the issue
-3. If yes: Update direct dependency
-4. If no: Add transitive as direct dependency with comment
-5. Alternative: Use override mechanisms (if available)
+2. Check if a newer version of the direct dependency includes the patched transitive version
+3. Update the direct dependency to resolve the vulnerability
+4. This is the preferred approach as it maintains proper dependency management
+
+**Option 2: Use Override Mechanisms (Last resort)**
+- Only use if Option 1 is not viable
+- Use package manager-specific override features when available
+- Document the override, reason, and expected removal timeline
 
 ## Version Constraint Preservation
 

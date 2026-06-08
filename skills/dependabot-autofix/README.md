@@ -1726,8 +1726,9 @@ The skill provides comprehensive autonomous capabilities:
 ### Known Issues
 
 1. **Transitive dependencies:**
-   - May not handle complex transitive dependency updates
-   - Some indirect dependencies may need manual updates
+   - The skill prioritizes updating direct dependencies first to resolve transitive vulnerabilities
+   - If direct dependency updates cannot resolve the issue, version override mechanism is used
+   - Complex dependency trees may still require manual intervention
 
 2. **Monorepos:**
    - Limited support for monorepo structures

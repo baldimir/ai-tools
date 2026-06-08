@@ -337,10 +337,16 @@ Grouped by Library:
 2. Identify dependency file(s) for the detected ecosystem
 3. Determine current version
 4. Determine target version (from alert's patched version)
-5. Update dependency file with new version
-6. Run appropriate package manager update command
-7. Verify lock files are updated (if applicable)
-8. Commit changes
+5. **Check if dependency is transitive:**
+   - If transitive: First attempt to update the direct dependency that brought it in
+   - Identify the parent/direct dependency
+   - Check if updating the direct dependency resolves the vulnerability
+   - If successful: Proceed with direct dependency update
+   - If unsuccessful: Fall back to using override mechanisms
+6. Update dependency file with new version
+7. Run appropriate package manager update command
+8. Verify lock files are updated (if applicable)
+9. Commit changes
 
 **General Update Approach:**
 

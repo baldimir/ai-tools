@@ -174,23 +174,66 @@ is_transitive_dependency() {
     
     # Check if dependency is direct or transitive
     # Implementation varies by ecosystem
+    # Returns: 0 if transitive, 1 if direct
     check_dependency_type "$package_name" "$ecosystem"
 }
 ```
 
 ### Updating Transitive Dependencies
 
-**Option 1: Update Direct Dependency**
-- Find which direct dependency includes the vulnerable transitive
-- Update the direct dependency to a version that includes the fix
+**IMPORTANT: Always follow this prioritization strategy when handling transitive dependencies.**
 
-**Option 2: Add as Direct Dependency**
-- Add the transitive as a direct dependency with a comment
-- Document why it was added
+#### Option 1: Update Direct Dependency (ALWAYS TRY FIRST)
 
-**Option 3: Use Override Mechanisms**
-- Use package manager-specific override features
-- Document the override and reason
+This is the preferred and recommended approach:
+
+1. **Identify the parent dependency:**
+   - Find which direct dependency includes the vulnerable transitive dependency
+   - Use ecosystem-specific tools to trace the dependency tree
+
+2. **Check for compatible updates:**
+   - Determine if a newer version of the direct dependency includes the patched transitive version
+   - Verify compatibility with your project
+
+3. **Update the direct dependency:**
+   - Update the direct dependency to the version that resolves the vulnerability
+   - This maintains proper dependency management and reduces future conflicts
+
+**Best Practice:** This approach is preferred because it:
+- Maintains the natural dependency hierarchy
+- Reduces the risk of version conflicts
+- Ensures future updates are handled correctly by the package manager
+- Avoids manual overrides that may be forgotten
+
+#### Option 2: Use Override Mechanisms (Last resort)
+
+Only use this approach if Option 1 is not viable:
+
+- Use package manager-specific override features when available
+- Document the override with a clear explanation
+- Include the reason and expected timeline for removal
+- Add monitoring to ensure the override is reviewed in future updates
+
+### Example Workflow
+
+```bash
+# 1. Check if dependency is transitive
+if is_transitive_dependency "$package_name" "$ecosystem"; then
+    
+    # 2. FIRST: Try to update the direct dependency
+    parent_dep=$(find_parent_dependency "$package_name" "$ecosystem")
+    
+    if can_update_parent "$parent_dep" "$target_version"; then
+        echo "Updating direct dependency $parent_dep to resolve transitive vulnerability"
+        update_dependency "$parent_dep" "$target_version"
+        return 0
+    fi
+    
+    # 3. FALLBACK: If parent update fails, use alternative approaches
+    echo "Direct dependency update not viable, using fallback approach"
+    # Proceed with Option 2 or 3
+fi
+```
 
 ## Error Handling
 
