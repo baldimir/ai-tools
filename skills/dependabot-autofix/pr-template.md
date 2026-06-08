@@ -13,7 +13,7 @@ This PR fixes {N} Dependabot security alert(s) for `{package-name}`.
 ## Alerts Fixed
 
 {For each alert:}
-- **Alert #{number}**: {CVE-ID} - {severity} - {summary}
+- **Alert {number}**: {CVE-ID} - {severity} - {summary}
   - Vulnerable version: {old-version}
   - Fixed version: {new-version}
   - CVSS Score: {score}
@@ -44,7 +44,7 @@ This PR was automatically created but requires manual intervention to complete.
 ## Alerts to Fix
 
 {For each alert:}
-- **Alert #{number}**: {CVE-ID} - {severity} - {summary}
+- **Alert {number}**: {CVE-ID} - {severity} - {summary}
   - Vulnerable version: {old-version}
   - Fixed version: {new-version}
   - CVSS Score: {score}
@@ -239,17 +239,17 @@ This PR fixes 3 Dependabot security alerts for `lodash`.
 
 ## Alerts Fixed
 
-- **Alert #1**: CVE-2021-23337 - high - Command Injection in lodash
+- **Alert 1**: CVE-2021-23337 - high - Command Injection in lodash
   - Vulnerable version: 4.17.15
   - Fixed version: 4.17.21
   - CVSS Score: 7.2
 
-- **Alert #2**: CVE-2020-28500 - high - Regular Expression Denial of Service (ReDoS)
+- **Alert 2**: CVE-2020-28500 - high - Regular Expression Denial of Service (ReDoS)
   - Vulnerable version: 4.17.15
   - Fixed version: 4.17.21
   - CVSS Score: 7.5
 
-- **Alert #3**: CVE-2019-10744 - critical - Prototype Pollution
+- **Alert 3**: CVE-2019-10744 - critical - Prototype Pollution
   - Vulnerable version: 4.17.15
   - Fixed version: 4.17.21
   - CVSS Score: 9.1
@@ -277,7 +277,7 @@ This PR was automatically created but requires manual intervention to complete.
 
 ## Alerts to Fix
 
-- **Alert #5**: CVE-2023-12345 - medium - Security vulnerability in spring-core
+- **Alert 5**: CVE-2023-12345 - medium - Security vulnerability in spring-core
   - Vulnerable version: 5.3.15
   - Fixed version: 5.3.20
   - CVSS Score: 6.5
