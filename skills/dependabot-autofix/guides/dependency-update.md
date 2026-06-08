@@ -231,7 +231,7 @@ if is_transitive_dependency "$package_name" "$ecosystem"; then
     
     # 3. FALLBACK: If parent update fails, use alternative approaches
     echo "Direct dependency update not viable, using fallback approach"
-    # Proceed with Option 2 or 3
+    # Proceed with Option 2 (override mechanisms)
 fi
 ```
 
