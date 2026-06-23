@@ -1,7 +1,6 @@
 ---
-name: Dependabot Auto-Fix
+name: dependabot-autofix
 description: Autonomously fix GitHub Dependabot security alerts by updating dependencies, discovering migration guides, applying code fixes, and creating pull requests
-version: 2.0.0
 ---
 
 # Dependabot Auto-Fix Skill
